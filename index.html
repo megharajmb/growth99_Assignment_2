@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Icon with Sliding Panel</title>
+    <!-- Bootstrap CSS for layout and styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/css/bootstrap.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+            margin-top: 70px; /* Adjust for header height */
+        }
+
+        /* Sidebar styling */
+        #sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #f8f9fa;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: transform 0.3s ease; 
+            transform: translateX(0);
+        }
+
+        #sidebar.collapsed {
+            transform: translateX(-250px); 
+        }
+
+        #sidebar ul {
+            padding-left: 0;
+            list-style-type: none;
+        }
+
+        #sidebar ul li {
+            padding: 15px 20px;
+        }
+
+        #sidebar ul li a {
+            color: #343a40;
+            text-decoration: none;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #sidebar ul li a:hover {
+            color: #007bff; /* Change color on hover */
+        }
+
+        /* Dropdown styling inside sidebar */
+        .dropdown-container {
+            display: none;
+            background-color: #e9ecef;
+            padding-left: 20px;
+        }
+
+        .dropdown-container a {
+            padding: 10px 15px;
+            display: block;
+            color: #343a40;
+        }
+
+        .dropdown-container a:hover {
+            background-color: #ddd; 
+        }
+
+        /* Header styling */
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            gap: 20px;
+        }
+
+        header .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #343a40;
+        }
+        
+        .profile-link {
+            color: blue; 
+        }
+
+        #hamburger {
+            font-size: 24px;
+            cursor: pointer;
+            display: none; /* Hide on larger screens */
+        }
+
+        /* Notification icon styling */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .notification-icon i {
+            font-size: 24px;
+            color: #343a40;
+            padding-right: 100px; 
+        }
+
+        #notificationCount {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        /* Notification Panel styling */
+        #notificationPanel {
+            width: 350px;
+            max-width: 90vw; 
+            height: 100vh;
+            background-color: #f8f9fa;
+            position: fixed;
+            top: 0;
+            right: 0;
+            transform: translateX(100%);
+            transition: transform 0.3s ease; /* Smooth transition for sliding in/out */
+            overflow-y: auto; 
+            z-index: 1050; 
+        }
+
+        #notificationPanel.open {
+            transform: translateX(0); 
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+
+        .notification {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .notification.unread {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+
+        .notification .timestamp {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Responsive Sidebar */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-250px); /* Hide sidebar on small screens */
+            }
+
+            #sidebar.collapsed {
+                transform: translateX(0); /* Show sidebar when expanded */
+            }
+
+            #hamburger {
+                display: block; /* Show hamburger menu on small screens */
+            }
+
+            .container {
+                margin-left: 0; /* Adjust container margin for small screens */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header text-center py-3">
+            <h4>Client Logo</h4>
+        </div>
+        <ul class="list-unstyled components">
+            <!-- Navigation items with dropdowns -->
+            <li>
+                <a href="#" class="sidebar-link" data-toggle="collapse" data-target="#appointmentsDropdown"
+                    aria-expanded="false">
+                    Appointments <i class="fas fa-caret-down"></i>
+                </a>
+                <div class="dropdown-container collapse" id="appointmentsDropdown">
+                    <a href="#">Upcoming</a>
+                    <a href="#">Past</a>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-toggle="collapse" data-target="#leadsDropdown"
+                    aria-expanded="false">
+                    Leads <i class="fas fa-caret-down"></i>
+                </a>
+                <div class="dropdown-container collapse" id="leadsDropdown">
+                    <a href="#">All Leads</a>
+                    <a href="#">New Leads</a>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-toggle="collapse" data-target="#marketingDropdown"
+                    aria-expanded="false">
+                    Marketing <i class="fas fa-caret-down"></i>
+                </a>
+                <div class="dropdown-container collapse" id="marketingDropdown">
+                    <a href="#">Campaigns</a>
+                    <a href="#">Reports</a>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-toggle="collapse" data-target="#reviewsDropdown"
+                    aria-expanded="false">
+                    5 Star Review <i class="fas fa-caret-down"></i>
+                </a>
+                <div class="dropdown-container collapse" id="reviewsDropdown">
+                    <a href="#">All Reviews</a>
+                    <a href="#">Pending Reviews</a>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-toggle="collapse" data-target="#triggersDropdown"
+                    aria-expanded="false">
+                    Triggers <i class="fas fa-caret-down"></i>
+                </a>
+                <div class="dropdown-container collapse" id="triggersDropdown">
+                    <a href="#">Automation</a>
+                    <a href="#">Settings</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Header -->
+    <header>
+        <span id="hamburger" class="fas fa-bars"></span>
+        <div class="logo-text">Client Logo</div>
+        <div class="navbar-brand">
+            Management <span class="profile-link">> My Profile</span> 
+        </div>
+        <div class="notification-icon">
+            <i id="notificationIcon" class="fas fa-bell"></i>
+            <span id="notificationCount" class="badge bg-danger">3</span> <!-- Unread notifications count -->
+        </div>
+    </header>
+
+    <!-- Notification Panel -->
+    <div id="notificationPanel" class="notification-panel">
+        <div class="notification-header">
+            <h4>Notifications</h4>
+            <button id="closePanel" class="btn btn-close"></button> <!-- Close button for the panel -->
+        </div>
+        <div class="notification-content">
+            <div class="notification unread">
+                <strong>New Comment</strong>
+                <p>Someone commented on your post.</p>
+                <span class="timestamp">5 minutes ago</span>
+            </div>
+            <div class="notification">
+                <strong>Update Available</strong>
+                <p>There is a new update available.</p>
+                <span class="timestamp">30 minutes ago</span>
+            </div>
+            <div class="notification">
+                <strong>New Like</strong>
+                <p>Someone liked your post.</p>
+                <span class="timestamp">1 hour ago</span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container mt-5 pt-5" style="margin-left: 250px;">
+        <h2>Assignment 2</h2>
+        <p>This is Assignment 2, which involves creating an interactive web interface with a responsive sidebar, a fixed header, and a dynamic notification panel.</p>
+    </div>
+
+    <!-- Bootstrap JS, Popper.js for interactive components -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.getElementById('hamburger');
+            const sidebar = document.getElementById('sidebar');
+            const notificationIcon = document.getElementById('notificationIcon');
+            const notificationPanel = document.getElementById('notificationPanel');
+            const closePanel = document.getElementById('closePanel');
+            const notificationCount = document.getElementById('notificationCount');
+            const notificationContent = document.querySelector('.notification-content');
+    
+            // Example notifications data (fetch from an API or server in a real application)
+            const notifications = [
+                { id: 1, message: 'New Comment', read: false },
+                { id: 2, message: 'Update Available', read: true },
+                { id: 3, message: 'New Like', read: false }
+            ];
+    
+            // Function to update notification count
+            function updateNotificationCount() {
+                const unreadCount = notifications.filter(notification => !notification.read).length;
+                notificationCount.textContent = unreadCount;
+            }
+    
+            // Initialize notification count on page load
+            updateNotificationCount();
+    
+            // Toggle sidebar visibility on hamburger menu click for mobile view
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+            });
+    
+            // Handle sidebar dropdowns: show/hide on click
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const dropdown = document.querySelector(this.getAttribute('data-target'));
+    
+                    if (dropdown) {
+                        dropdown.classList.toggle('collapse');
+                        dropdown.style.display = dropdown.classList.contains('collapse') ? 'none' : 'block';
+                    }
+                });
+            });
+    
+            // Toggle notification panel visibility on icon click
+            notificationIcon.addEventListener('click', function() {
+                notificationPanel.classList.toggle('open');
+            });
+    
+            // Close the notification panel
+            closePanel.addEventListener('click', function() {
+                notificationPanel.classList.remove('open');
+            });
+    
+            // Function to mark a notification as read and update the count
+            function markNotificationAsRead(notificationId) {
+                const notification = notifications.find(n => n.id === notificationId);
+                if (notification) {
+                    notification.read = true;
+                    updateNotificationCount();
+                }
+            }
+    
+            // Example function usage: mark notification as read on click (add data-id attributes to notifications if needed)
+            document.querySelectorAll('.notification').forEach(notificationElement => {
+                notificationElement.addEventListener('click', function() {
+                    const notificationId = parseInt(this.dataset.id, 10); 
+                    markNotificationAsRead(notificationId);
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
